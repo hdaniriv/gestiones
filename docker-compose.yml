@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: container_db_gestion
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gestion_ms
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: "G3sti0n..$$45"
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata_gestion:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+volumes:
+  pgdata_gestion:
+    driver: local

@@ -1,0 +1,56 @@
+# Node dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+out/
+
+# TypeScript build info
+*.tsbuildinfo
+tsconfig.tsbuildinfo
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Environment files (mantén solo los *.example en el repo)
+.env
+.env.*
+!.env.example
+
+# Caches
+.cache/
+.eslintcache
+
+# IDE/editor
+.vscode/
+.idea/
+.vs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker/local overrides
+docker-compose.override.yml
+.env.local
+.envrc
+
+# Temporary files
+tmp/
+temp/node_modules/
+dist/
+.env*
+coverage/
+.idea/
+.vscode/
+.DS_Store

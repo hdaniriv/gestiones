@@ -1,0 +1,46 @@
+{
+  "name": "gestion-ms",
+  "version": "0.1.0",
+  "private": true,
+  "main": "dist/main.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node dist/main.js",
+    "build": "tsc -p .",
+    "start:dev": "ts-node-dev --respawn --transpile-only src/main.ts",
+    "start:dev:with-db": "npm run db:up && npm run start:dev",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "db:logs": "docker compose logs -f",
+    "rpc:send": "ts-node -T tools/rpc-test.ts",
+    "rpc:health": "npm run rpc:send -- health.ping",
+    "rpc:clientes:list": "npm run rpc:send -- clientes.findAll.v1",
+    "lint": "eslint 'src/**/*.{ts,tsx}'",
+    "format": "prettier --write ."
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/microservices": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.2.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.0",
+    "pg": "^8.11.5",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "typeorm": "^0.3.20"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.4.0"
+  }
+}
