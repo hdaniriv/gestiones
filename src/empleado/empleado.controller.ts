@@ -24,6 +24,11 @@ export class EmpleadoController {
     return this.service.findOne(message.id);
   }
 
+  @MessagePattern({ cmd: 'empleados.findBySupervisor.v1' })
+  findBySupervisor(@Payload() message: { idSupervisor: number }) {
+    return this.service.findTecnicosBySupervisor(message.idSupervisor);
+  }
+
   @MessagePattern({ cmd: 'empleados.update.v1' })
   update(@Payload() message: { id: number; dto: UpdateEmpleadoDto }) {
     const { id, dto } = message;

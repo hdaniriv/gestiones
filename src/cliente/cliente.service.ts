@@ -13,6 +13,13 @@ export class ClienteService {
   ) {}
 
   async create(dto: CreateClienteDto, userId?: number) {
+    // Si viene idUsuario, validar que no exista ya un cliente asociado a ese usuario
+    if (dto.idUsuario) {
+      const existingByUser = await this.repo.findOne({ where: { idUsuario: dto.idUsuario } });
+      if (existingByUser) {
+        throw new Error('Ya existe un cliente asociado a este usuario');
+      }
+    }
     const entity = this.repo.create({
       nombre: dto.nombre,
       direccion: dto.direccion,
@@ -54,6 +61,10 @@ export class ClienteService {
     if (longitud !== undefined) existing.longitud = String(longitud);
 
     return this.repo.save(existing);
+  }
+
+  async findByUsuario(idUsuario: number) {
+    return this.repo.findOne({ where: { idUsuario } });
   }
 
   async remove(id: number) {

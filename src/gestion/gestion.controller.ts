@@ -3,6 +3,7 @@ import { MessagePattern, Payload } from '@nestjs/microservices';
 import { GestionService } from './gestion.service';
 import { CreateGestionDto } from './dto/create-gestion.dto';
 import { UpdateGestionDto } from './dto/update-gestion.dto';
+import { QueryGestionesDto } from './dto/query-gestiones.dto';
 
 @Controller()
 export class GestionController {
@@ -17,6 +18,27 @@ export class GestionController {
   @MessagePattern({ cmd: 'gestiones.findAll.v1' })
   findAll() {
     return this.service.findAll();
+  }
+
+  // Nuevo: búsqueda filtrada con reglas por rol (Cliente/Técnico/Supervisor/Administrador)
+  @MessagePattern({ cmd: 'gestiones.search.v1' })
+  search(
+    @Payload()
+    message: {
+      query: QueryGestionesDto;
+      userContext?: { userId?: number; roles?: string[] };
+    }
+  ) {
+    const { query, userContext } = message;
+    return this.service.search(query, userContext);
+  }
+
+  // Listado de gestiones sin técnico asignado (útil para supervisores)
+  @MessagePattern({ cmd: 'gestiones.sinTecnico.v1' })
+  sinTecnico(
+    @Payload() message: { query?: Pick<QueryGestionesDto, 'desde' | 'hasta'> }
+  ) {
+    return this.service.sinTecnico(message.query);
   }
 
   @MessagePattern({ cmd: 'gestiones.findById.v1' })

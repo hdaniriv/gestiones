@@ -16,14 +16,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         // Cargar automáticamente las entidades registradas vía TypeOrmModule.forFeature
         autoLoadEntities: true,
         synchronize: config.get<string>('DB_SYNC', 'true') === 'true',
-        // Logging configurable: "false" | "true" | "error" | "query,error" ...
-        logging: ((): boolean | ("query" | "error" | "schema" | "warn" | "info" | "log" | "migration")[] => {
-          const raw = (config.get<string>('DB_LOGGING', 'error') || '').trim().toLowerCase();
-          if (raw === 'true') return true;
-          if (raw === 'false' || raw === '') return false;
-          // Permitir lista separada por comas (ej: "error,warn")
-          return raw.split(',').map(v => v.trim()) as any;
-        })(),
+        // Solo registrar errores de base de datos
+        logging: ['error'],
         ssl: false,
       }),
     }),

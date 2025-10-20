@@ -17,6 +17,11 @@ export class SupervisorTecnicoController {
   @MessagePattern({ cmd: 'supervisoresTecnicos.findAll.v1' })
   findAll() { return this.service.findAll(); }
 
+  @MessagePattern({ cmd: 'supervisoresTecnicos.findBySupervisor.v1' })
+  findBySupervisor(@Payload() message: { idSupervisor: number }) {
+    return this.service.findBySupervisor(message.idSupervisor);
+  }
+
   @MessagePattern({ cmd: 'supervisoresTecnicos.findById.v1' })
   findById(@Payload() message: { id: number }) { return this.service.findOne(message.id); }
 
@@ -27,4 +32,9 @@ export class SupervisorTecnicoController {
 
   @MessagePattern({ cmd: 'supervisoresTecnicos.delete.v1' })
   remove(@Payload() message: { id: number }) { return this.service.remove(message.id); }
+
+  @MessagePattern({ cmd: 'supervisoresTecnicos.deleteBySupervisor.v1' })
+  removeBySupervisor(@Payload() message: { idSupervisor: number }) {
+    return this.service.removeBySupervisor(message.idSupervisor);
+  }
 }

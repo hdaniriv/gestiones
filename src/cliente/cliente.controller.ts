@@ -24,6 +24,11 @@ export class ClienteController {
     return this.service.findOne(message.id);
   }
 
+  @MessagePattern({ cmd: 'clientes.findByUsuario.v1' })
+  findByUsuario(@Payload() message: { idUsuario: number }) {
+    return this.service.findByUsuario(message.idUsuario);
+  }
+
   @MessagePattern({ cmd: 'clientes.update.v1' })
   update(@Payload() message: { id: number; dto: UpdateClienteDto }) {
     const { id, dto } = message;

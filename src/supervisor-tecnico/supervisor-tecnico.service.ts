@@ -21,6 +21,10 @@ export class SupervisorTecnicoService {
     return this.repo.find({ order: { id: 'ASC' } });
   }
 
+  findBySupervisor(idSupervisor: number) {
+    return this.repo.find({ where: { idSupervisor }, order: { id: 'ASC' } });
+  }
+
   async findOne(id: number) {
     const found = await this.repo.findOne({ where: { id } });
     if (!found) throw new NotFoundException('SupervisorTecnico no encontrado');
@@ -37,5 +41,12 @@ export class SupervisorTecnicoService {
     const prev = await this.findOne(id);
     await this.repo.remove(prev);
     return { deleted: true };
+  }
+
+  async removeBySupervisor(idSupervisor: number) {
+    const rows = await this.repo.find({ where: { idSupervisor } });
+    if (rows.length === 0) return { deleted: 0 };
+    await this.repo.remove(rows);
+    return { deleted: rows.length };
   }
 }
