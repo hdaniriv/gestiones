@@ -162,8 +162,17 @@ export class GestionService {
       if (!s) return undefined;
       const t = s.toString().trim();
       if (!t || t.toLowerCase() === 'null' || t.toLowerCase() === 'undefined') return undefined;
-      // Sólo aceptar formato ISO o YYYY-MM-DD
-      const isoLike = /^(\d{4}-\d{2}-\d{2})(?:[ tT]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/;
+      // YYYY-MM-DD (fecha corta, sin hora) -> construir fecha LOCAL para evitar desfaces de zona
+      const ymd = /^(\d{4})-(\d{2})-(\d{2})$/;
+      const mIso = t.match(ymd);
+      if (mIso) {
+        const y = Number(mIso[1]);
+        const m = Number(mIso[2]);
+        const d = Number(mIso[3]);
+        return new Date(y, m - 1, d); // local midnight
+      }
+      // ISO extendido con hora/offset
+      const isoLike = /^(\d{4}-\d{2}-\d{2})[ tT]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/;
       if (!isoLike.test(t)) return undefined;
       const d = new Date(t);
       return isNaN(d.getTime()) ? undefined : d;
@@ -294,21 +303,28 @@ export class GestionService {
   }
 
   async sinTecnico(query?: { desde?: string; hasta?: string }) {
-    const where: any = { idTecnico: IsNull() };
-    // Nota: si se quisiera filtrar por rango, usamos QueryBuilder para fechaProgramada
     const qb = this.repo.createQueryBuilder('g').where('g.idTecnico IS NULL');
-    const parseDate = (s?: string): Date | undefined => {
+    const parseDate2 = (s?: string): Date | undefined => {
       if (!s) return undefined;
       const t = s.toString().trim();
-      const isoLike = /^(\d{4}-\d{2}-\d{2})(?:[ tT]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?)?$/;
-      if (!isoLike.test(t)) return undefined;
+      const ymd = /^(\d{4})-(\d{2})-(\d{2})$/;
+      const m = t.match(ymd);
+      if (m) return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+      const iso = /^(\d{4}-\d{2}-\d{2})[ tT]\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})?$/;
+      if (!iso.test(t)) return undefined;
       const d = new Date(t);
       return isNaN(d.getTime()) ? undefined : d;
     };
-    const dFrom = parseDate(query?.desde);
-    const dTo = parseDate(query?.hasta);
-    if (dFrom) qb.andWhere('g.fechaProgramada >= :desde', { desde: dFrom });
-    if (dTo) qb.andWhere('g.fechaProgramada <= :hasta', { hasta: dTo });
+    const dFrom = parseDate2(query?.desde);
+    const dTo = parseDate2(query?.hasta);
+    if (dFrom) {
+      dFrom.setHours(0, 0, 0, 0);
+      qb.andWhere('g.fechaProgramada >= :desde', { desde: dFrom });
+    }
+    if (dTo) {
+      dTo.setHours(23, 59, 59, 999);
+      qb.andWhere('g.fechaProgramada <= :hasta', { hasta: dTo });
+    }
     qb.orderBy('g.id', 'DESC');
     return qb.getMany();
   }
