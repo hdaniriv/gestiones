@@ -28,6 +28,12 @@ export class EmpleadoService {
     return this.repo.find({ order: { id: 'ASC' } });
   }
 
+  async findByUsuario(idUsuario: number) {
+    if (!idUsuario && idUsuario !== 0) return null;
+    const found = await this.repo.findOne({ where: { idUsuario } });
+    return found || null;
+  }
+
   async findOne(id: number) {
     const found = await this.repo.findOne({ where: { id } });
     if (!found) throw new NotFoundException('Empleado no encontrado');
@@ -50,7 +56,7 @@ export class EmpleadoService {
     return saved;
   }
 
-  // Técnicos asignados a un supervisor
+  // Tecnicos asignados a un supervisor
   async findTecnicosBySupervisor(idSupervisor: number) {
     const rels = await this.supTecRepo.find({ where: { idSupervisor } });
     if (rels.length === 0) return [] as EmpleadoEntity[];
