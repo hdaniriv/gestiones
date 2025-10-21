@@ -3,6 +3,11 @@ import { BaseEntity } from './base.entity';
 
 @Entity({ name: 'gestion' })
 export class GestionEntity extends BaseEntity {
+  // Código de gestión formato YYNNNN (6 chars). Único. Se deja nullable
+  // temporalmente para poder poblar códigos existentes manualmente.
+  @Column({ name: 'codigo', type: 'varchar', length: 6, unique: true, nullable: false })
+  codigo!: string;
+
   @Column({ name: 'idCliente', type: 'int' })
   idCliente!: number;
 

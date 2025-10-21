@@ -40,6 +40,29 @@ export class GestionService {
     if (dto.idTecnico) estado = 'Asignado';
     if (dIni) estado = 'En Proceso';
     if (dFin) estado = 'Finalizado';
+    const yy = new Date().getFullYear() % 100; // últimos 2 dígitos del año actual
+    const yyStr = String(yy).padStart(2, '0');
+    // Obtener el correlativo máximo del año actual y sumarle 1
+    // Considera solo codigos con prefijo del año actual y 6 dígitos
+    const makeCodigo = async (): Promise<string> => {
+      const prefix = yyStr;
+      // Buscar el mayor correlativo actual para el año
+      const last = await this.repo
+        .createQueryBuilder('g')
+        .select('g.codigo', 'codigo')
+        .where('g.codigo LIKE :pref', { pref: `${prefix}%` })
+        .orderBy('g.codigo', 'DESC')
+        .limit(1)
+        .getRawOne<{ codigo?: string }>();
+      const lastNum = last?.codigo?.substring(2) || '0000';
+      let next = (parseInt(lastNum, 10) || 0) + 1;
+      if (next > 9999) {
+        throw new Error('Se alcanzó el máximo de correlativos para este año');
+      }
+      const correl = String(next).padStart(4, '0');
+      return `${prefix}${correl}`;
+    };
+
     const entity = this.repo.create({
       idCliente: dto.idCliente,
       idTecnico: dto.idTecnico,
@@ -54,7 +77,20 @@ export class GestionService {
       estado,
       idUsuarioCreador: userId ?? 0,
     } as any);
-    return this.repo.save(entity);
+    const trySave = async (attempt = 1): Promise<any> => {
+      (entity as any).codigo = await makeCodigo();
+      try {
+        return await this.repo.save(entity);
+      } catch (err: any) {
+        // Postgres unique violation
+        const code = err?.code || err?.errno || err?.sqlState;
+        if ((code === '23505' || code === 23505) && attempt < 3) {
+          return trySave(attempt + 1);
+        }
+        throw err;
+      }
+    };
+    return trySave();
   }
 
   findAll() {
@@ -73,6 +109,10 @@ export class GestionService {
     userContext?: { userId?: number; roles?: string[] }
   ) {
     const prev = await this.findOne(id);
+    // Proteger el campo codigo: nunca se actualiza via update
+    if ((dto as any).codigo !== undefined) {
+      delete (dto as any).codigo;
+    }
     const roles = (userContext?.roles || []).map((r) => r.toLowerCase());
     const isAdmin = roles.includes('administrador');
     const isSupervisor = roles.includes('supervisor');

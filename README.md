@@ -1,6 +1,6 @@
 # Gestión (Microservicio)
 
-Servicio NestJS (microservicio TCP) para gestionar clientes.
+Servicio NestJS (microservicio TCP) para gestionar clientes, empleados y gestiones.
 
 ## Requisitos
 - Node.js 18+
@@ -40,7 +40,32 @@ El servicio escucha por TCP en `127.0.0.1:4010`.
 - clientes.findById.v1 { id }
 - clientes.update.v1 { id, dto }
 - clientes.delete.v1 { id }
+- empleados.findAll.v1
+- empleados.findById.v1 { id }
+- empleados.findByUsuario.v1 { idUsuario }
+- empleados.findBySupervisor.v1 { idSupervisor }
+- gestiones.create.v1 { dto, userContext }  // genera codigo YYNNNN automáticamente
+- gestiones.findAll.v1
+- gestiones.findById.v1 { id }
+- gestiones.update.v1 { id, dto, userContext }
+- gestiones.delete.v1 { id }
+- gestiones.search.v1 { query, userContext }
+- gestiones.sinTecnico.v1 { query }
 - health.ping { userContext? }
 
 ## Entidades
-- ClienteEntity (hereda de BaseEntity)
+- BaseEntity: id, fechaCreacion, fechaModificacion, idUsuarioCreador
+- ClienteEntity
+- EmpleadoEntity
+- EmpleadoTipoEntity
+- SupervisorTecnicoEntity
+- TipoGestionEntity
+- GestionEntity
+	- codigo: varchar(6), único, formato YYNNNN (p.ej., 250001). Se genera en create(), no editable.
+	- idCliente, idTecnico?, idTipoGestion, direccion, latitud?, longitud?, fechaProgramada, fechaInicio?, fechaFin?, observaciones?, estado
+
+## Notas sobre código de gestión
+- El código se genera de forma encapsulada en create().
+- Prefijo: últimos dos dígitos del año actual.
+- Correlativo: 4 dígitos, se incrementa por año y se reinicia cada año.
+- En concurrencia, si ocurre colisión de clave única, se reintenta hasta 3 veces.
