@@ -18,7 +18,11 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         synchronize: config.get<string>('DB_SYNC', 'true') === 'true',
         // Solo registrar errores de base de datos
         logging: ['error'],
-        ssl: false,
+        // SSL configurable para proveedores gestionados (Neon/Supabase/etc.)
+        ssl:
+          config.get<string>("DB_SSL", "false") === "true"
+            ? { rejectUnauthorized: false }
+            : false,
       }),
     }),
   ],
