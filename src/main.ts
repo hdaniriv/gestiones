@@ -5,7 +5,10 @@ import 'reflect-metadata';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const host = process.env.MS_HOST || '127.0.0.1';
+  // En Fly, el DNS interno (app.internal) resuelve a IPv6 (AAAA). Para aceptar conexiones IPv6
+  // y evitar ECONNREFUSED desde otros servicios, escuchamos en '::' por defecto.
+  // En desarrollo local puedes exportar MS_HOST=127.0.0.1 si prefieres IPv4.
+  const host = process.env.MS_HOST || '::';
   const port = parseInt(process.env.PORT || '4010', 10);
 
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
